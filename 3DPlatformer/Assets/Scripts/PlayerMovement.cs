@@ -32,6 +32,9 @@ public class PlayerMovement : MonoBehaviour
     [Tooltip("The mask determining what is considered as ground for the player.")]
     public LayerMask groundMask;
 
+    [Header("Events")]
+    public GameEvent onPlayerDash;
+
     private Rigidbody rb;
     private float horizontalInput;
     private float verticalInput;
@@ -124,6 +127,7 @@ public class PlayerMovement : MonoBehaviour
         {
             StartCoroutine(PerformDash(transform.forward));
             canDash = false;
+            onPlayerDash.Raise(this, dashCooldown);
             StartCoroutine(DashCooldown());
         }
     }
