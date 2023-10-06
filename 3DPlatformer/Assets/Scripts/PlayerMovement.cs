@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -43,13 +44,60 @@ public class PlayerMovement : MonoBehaviour
     private int jumpsLeft;
     private bool canDash = true;
 
-    void Start()
+    #region InputSystem
+
+    PlayerInputActions _playerInput;
+    Vector2 _movementInput;
+    Vector3 _currentMovement;
+    bool _isMovementPerformed;
+    bool _isDashed;
+    bool _isJumped;
+
+    private void OnEnable()
     {
+        _playerInput.Player.Enable();
+    }
+
+    private void OnDisable()
+    {
+        _playerInput.Player.Disable();
+    }
+
+    void Move(InputAction.CallbackContext context)
+    {
+        _movementInput = context.ReadValue<Vector2>();
+        _currentMovement.x = _movementInput.x;
+        _currentMovement.z = _movementInput.y;
+    }
+
+    void Jump(InputAction.CallbackContext context)
+    {
+        _isJumped = true;
+    }
+
+    void Dash(InputAction.CallbackContext context)
+    {
+        if(canDash) _isDashed = true;
+    }
+
+    #endregion
+
+    void Awake()
+    {
+        _playerInput = new PlayerInputActions();
+        _playerInput.Player.Move.started += Move; 
+        _playerInput.Player.Move.performed += Move; 
+        _playerInput.Player.Move.canceled += Move; 
+
+        _playerInput.Player.Jump.performed += Jump; 
+        _playerInput.Player.Dash.performed += Dash; 
+
         rb = GetComponent<Rigidbody>();
 
         if (groundCheck == null)
             groundCheck = transform.Find("GroundCheck");
     }
+
 
     private void Update()
     {
@@ -59,16 +107,16 @@ public class PlayerMovement : MonoBehaviour
         if (IsGrounded())
         {
             jumpsLeft = maxJumps;
-            if (Input.GetButtonDown("Jump")) Jump();
+            if (_isJumped) Jump();
             movementSpeed = groundMoveSpeed;
         }
         else
         {
-            if (Input.GetButtonDown("Jump") && jumpsLeft > 1) Jump();
+            if (_isJumped && jumpsLeft > 1) Jump();
             movementSpeed = inAirSpeed;
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftShift) && canDash) Dash();
+        if (_isDashed) Dash();
     }
 
     /// <summary>
@@ -76,10 +124,10 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private void MovePlayer()
     {
-        horizontalInput = Input.GetAxis("Horizontal");
-        verticalInput = Input.GetAxis("Vertical");
+        //horizontalInput = Input.GetAxis("Horizontal");
+        //verticalInput = Input.GetAxis("Vertical");
 
-        Vector3 moveDirection = new Vector3(horizontalInput, 0f, verticalInput).normalized;
+        Vector3 moveDirection = new Vector3(_currentMovement.x, 0f, _currentMovement.z).normalized;
         Vector3 moveVelocity = moveDirection * movementSpeed;
 
         rb.velocity = new Vector3(moveVelocity.x, rb.velocity.y, moveVelocity.z);
@@ -90,7 +138,7 @@ public class PlayerMovement : MonoBehaviour
     /// </summary>
     private void RotatePlayer()
     {
-        var moveInput = new Vector3(horizontalInput, 0, verticalInput);
+        var moveInput = new Vector3(_currentMovement.x, 0f, _currentMovement.z);
         if (moveInput.sqrMagnitude == 0) return;
 
         var forwardAngle = Mathf.Atan2(moveInput.x, moveInput.z) * Mathf.Rad2Deg;
@@ -104,6 +152,7 @@ public class PlayerMovement : MonoBehaviour
     private void Jump()
     {
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        _isJumped = false;
         jumpsLeft--;
     }
 
@@ -127,6 +176,7 @@ public class PlayerMovement : MonoBehaviour
         {
             StartCoroutine(PerformDash(transform.forward));
             canDash = false;
+            _isDashed = false;
             onPlayerDash.Raise(this, dashCooldown);
             StartCoroutine(DashCooldown());
         }
