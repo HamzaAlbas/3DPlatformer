@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,208 +6,158 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Variables")]
-    [Tooltip("Player's speed when on ground.")]
-    public float groundMoveSpeed = 5f;
-    [Tooltip("Player's speed when in the air.")]
-    public float inAirSpeed = 3f;
-    [Tooltip("Force applied when the player jumps.")]
-    public float jumpForce = 10f;
-    [Tooltip("Time taken to smoothly rotate the player towards the movement direction.")]
-    public float rotationSmoothTime = 0.05f;
-    [Tooltip("Maximum number of jumps allowed.")]
-    public int maxJumps = 2;
+    #region Variables: Movement
 
-    [Header("Dash")]
-    [Tooltip("Force applied when the player performs a dash.")]
-    public float dashForce = 20f;
-    [Tooltip("Cooldown time between consecutive dashes.")]
-    public float dashCooldown = 2f;
-    [Tooltip("Duration of the dash.")]
-    public float dashDuration = 0.25f;
+    private Vector2 _input;
+    private CharacterController _characterController;
+    private Vector3 _direction;
 
-    [Space]
+    public float speed;
+    public float acceleration;
 
-    [Header("References")]
-    [Tooltip("This should be placed at the bottom of player.")]
-    public Transform groundCheck;
-    [Tooltip("The mask determining what is considered as ground for the player.")]
-    public LayerMask groundMask;
-
-    [Header("Events")]
-    public GameEvent onPlayerDash;
-
-    private Rigidbody rb;
-    private float horizontalInput;
-    private float verticalInput;
-    private float currentVelocity;
-    private float movementSpeed;
-    private int jumpsLeft;
-    private bool canDash = true;
-
-    #region InputSystem
-
-    PlayerInputActions _playerInput;
-    Vector2 _movementInput;
-    Vector3 _currentMovement;
-    bool _isMovementPerformed;
-    bool _isDashed;
-    bool _isJumped;
-
-    private void OnEnable()
-    {
-        _playerInput.Player.Enable();
-    }
-
-    private void OnDisable()
-    {
-        _playerInput.Player.Disable();
-    }
-
-    void Move(InputAction.CallbackContext context)
-    {
-        _movementInput = context.ReadValue<Vector2>();
-        _currentMovement.x = _movementInput.x;
-        _currentMovement.z = _movementInput.y;
-    }
-
-    void Jump(InputAction.CallbackContext context)
-    {
-        _isJumped = true;
-    }
-
-    void Dash(InputAction.CallbackContext context)
-    {
-        if(canDash) _isDashed = true;
-    }
+    private float currentSpeed;
 
     #endregion
 
-    void Awake()
+    #region Variables: Gravity
+
+    private float _gravity = -9.81f;
+    [SerializeField] private float gravityMultiplier = 3.0f;
+    private float _velocity;
+
+    #endregion
+
+    #region Variables: Jumping
+
+    [SerializeField] private float jumpPower;
+    private int _numberOfJumps;
+    [SerializeField] private int maxNumberOfJumps = 2;
+
+    #endregion
+
+    #region Variables: Dash
+
+    public GameEvent onPlayerDash;
+    public float dashSpeed = 10f;
+    public float dashDuration = 0.5f;
+    public float dashCooldown = 2f;
+    private bool _isDashing;
+    private bool _canDash = true;
+
+    #endregion
+
+
+    private float currentVelocity;
+    private float rotationSmoothTime = 0.05f;
+
+    private void Awake()
     {
-        _playerInput = new PlayerInputActions();
-        _playerInput.Player.Move.started += Move; 
-        _playerInput.Player.Move.performed += Move; 
-        _playerInput.Player.Move.canceled += Move; 
-
-        _playerInput.Player.Jump.performed += Jump; 
-        _playerInput.Player.Dash.performed += Dash; 
-
-        rb = GetComponent<Rigidbody>();
-
-        if (groundCheck == null)
-            groundCheck = transform.Find("GroundCheck");
+        _characterController = GetComponent<CharacterController>();
     }
-
 
     private void Update()
     {
-        MovePlayer();
         RotatePlayer();
+        ApplyGravity();
+        ApplyMovement();
 
-        if (IsGrounded())
+        if (_isDashing) Dash();
+    }
+
+    private void ApplyGravity()
+    {
+        if (IsGrounded() && _velocity < 0.0f)
         {
-            jumpsLeft = maxJumps;
-            if (_isJumped) Jump();
-            movementSpeed = groundMoveSpeed;
+            _velocity = -1.0f;
         }
         else
         {
-            if (_isJumped && jumpsLeft > 1) Jump();
-            movementSpeed = inAirSpeed;
+            _velocity += _gravity * gravityMultiplier * Time.deltaTime;
         }
 
-        if (_isDashed) Dash();
+        _direction.y = _velocity;
     }
 
-    /// <summary>
-    /// Move the player based on input.
-    /// </summary>
-    private void MovePlayer()
-    {
-        //horizontalInput = Input.GetAxis("Horizontal");
-        //verticalInput = Input.GetAxis("Vertical");
-
-        Vector3 moveDirection = new Vector3(_currentMovement.x, 0f, _currentMovement.z).normalized;
-        Vector3 moveVelocity = moveDirection * movementSpeed;
-
-        rb.velocity = new Vector3(moveVelocity.x, rb.velocity.y, moveVelocity.z);
-    }
-
-    /// <summary>
-    /// Rotate the player smoothly in the direction of movement.
-    /// </summary>
     private void RotatePlayer()
     {
-        var moveInput = new Vector3(_currentMovement.x, 0f, _currentMovement.z);
-        if (moveInput.sqrMagnitude == 0) return;
+        //var moveInput = new Vector3(_currentMovement.x, 0f, _currentMovement.z);
+        if (_input.sqrMagnitude == 0) return;
 
-        var forwardAngle = Mathf.Atan2(moveInput.x, moveInput.z) * Mathf.Rad2Deg;
+        var forwardAngle = Mathf.Atan2(_input.x, _input.y) * Mathf.Rad2Deg;
+        //_direction = Quaternion.Euler(0.0f, _mainCamera.transform.eulerAngles.y, 0.0f) * new Vector3(_input.x, 0.0f, _input.y);
         var smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, forwardAngle, ref currentVelocity, rotationSmoothTime);
         transform.rotation = Quaternion.Euler(0, smoothAngle, 0);
     }
 
-    /// <summary>
-    /// Make the player jump and reduce available jumps.
-    /// </summary>
-    private void Jump()
+    private void ApplyMovement()
     {
-        rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-        _isJumped = false;
-        jumpsLeft--;
+        currentSpeed = Mathf.MoveTowards(currentSpeed, speed, acceleration * Time.deltaTime);
+
+        _characterController.Move(_direction * currentSpeed * Time.deltaTime);
     }
 
-    /// <summary>
-    /// Check if the player is grounded.
-    /// </summary>
-    /// <returns>True if the player is grounded, false otherwise.</returns>
-    private bool IsGrounded()
+    public void Move(InputAction.CallbackContext context)
     {
-        bool isGrounded = Physics.CheckSphere(groundCheck.position, 0.1f, groundMask);
-
-        return isGrounded;
+        _input = context.ReadValue<Vector2>();
+        _direction = new Vector3(_input.x, 0.0f, _input.y);
     }
 
-    /// <summary>
-    /// Initiate a dash if possible.
-    /// </summary>
+    public void Jump(InputAction.CallbackContext context)
+    {
+        if (!context.started) return;
+        if (!IsGrounded() && _numberOfJumps >= maxNumberOfJumps) return;
+        if (_numberOfJumps == 0) StartCoroutine(WaitForLanding());
+
+        _numberOfJumps++;
+        _velocity = jumpPower;
+    }
+
+    public void Dash(InputAction.CallbackContext context)
+    {
+        if (!context.started) return;
+        if (_canDash) _isDashing = true;
+
+    }
+
+    private IEnumerator WaitForLanding()
+    {
+        yield return new WaitUntil(() => !IsGrounded());
+        yield return new WaitUntil(IsGrounded);
+
+        _numberOfJumps = 0;
+    }
+
+    private bool IsGrounded() => _characterController.isGrounded;
+
     private void Dash()
     {
-        if (canDash)
+        if (_canDash)
         {
-            StartCoroutine(PerformDash(transform.forward));
-            canDash = false;
-            _isDashed = false;
+            StartCoroutine(DashCoroutine());
+            _canDash = false;
+            _isDashing = false;
             onPlayerDash.Raise(this, dashCooldown);
             StartCoroutine(DashCooldown());
         }
+
     }
 
-    /// <summary>
-    /// Perform the dash action.
-    /// </summary>
-    /// <param name="dashDirection">Direction in which to dash.</param>
-    private IEnumerator PerformDash(Vector3 dashDirection)
+    private IEnumerator DashCoroutine()
     {
-        float elapsedTime = 0f;
-
-        while (elapsedTime < dashDuration)
+        if (!_canDash) yield return null;
+        float timer = 0f;
+        while (timer < dashDuration)
         {
-            rb.velocity = Vector3.Lerp(rb.velocity, dashDirection * dashForce, elapsedTime / dashDuration);
-
-            elapsedTime += Time.deltaTime;
+            _characterController.Move(transform.forward * dashSpeed * Time.deltaTime);
+            timer += Time.deltaTime;
             yield return null;
         }
-
-        rb.velocity = dashDirection * dashForce;
     }
 
-    /// <summary>
-    /// Apply a cooldown before the player can dash again.
-    /// </summary>
     private IEnumerator DashCooldown()
     {
+        _canDash = false;
         yield return new WaitForSeconds(dashCooldown);
-        canDash = true;
+        _canDash = true;
     }
 }
