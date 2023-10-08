@@ -46,6 +46,11 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
+    #region Animation
+
+    private Animator _animator;
+
+    #endregion
 
     private float currentVelocity;
     private float rotationSmoothTime = 0.05f;
@@ -53,6 +58,7 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         _characterController = GetComponent<CharacterController>();
+        _animator = GetComponent<Animator>();
     }
 
     private void Update()
@@ -61,7 +67,20 @@ public class PlayerMovement : MonoBehaviour
         ApplyGravity();
         ApplyMovement();
 
+
+        var velocity = new Vector3(_characterController.velocity.x, 0f, _characterController.velocity.z);
+
+        if(velocity.magnitude <= 0.1f)
+        {
+            _animator.SetBool("isWalking", false);
+        }
+        else
+        {
+            _animator.SetBool("isWalking", true);
+        }
+
         if (_isDashing) Dash();
+        _animator.SetBool("isGrounded", IsGrounded());
     }
 
     private void ApplyGravity()
@@ -94,6 +113,7 @@ public class PlayerMovement : MonoBehaviour
         currentSpeed = Mathf.MoveTowards(currentSpeed, speed, acceleration * Time.deltaTime);
 
         _characterController.Move(_direction * currentSpeed * Time.deltaTime);
+
     }
 
     public void Move(InputAction.CallbackContext context)
@@ -108,6 +128,9 @@ public class PlayerMovement : MonoBehaviour
         if (!IsGrounded() && _numberOfJumps >= maxNumberOfJumps) return;
         if (_numberOfJumps == 0) StartCoroutine(WaitForLanding());
 
+        if (_numberOfJumps == 0) _animator.SetBool("Jump", true);
+        if (_numberOfJumps == 1) _animator.SetBool("DoubleJump", true);
+
         _numberOfJumps++;
         _velocity = jumpPower;
     }
@@ -116,6 +139,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!context.started) return;
         if (_canDash) _isDashing = true;
+        
 
     }
 
@@ -123,7 +147,9 @@ public class PlayerMovement : MonoBehaviour
     {
         yield return new WaitUntil(() => !IsGrounded());
         yield return new WaitUntil(IsGrounded);
-
+        _animator.SetTrigger("isLanded");
+        _animator.SetBool("Jump", false);
+        _animator.SetBool("DoubleJump", false);
         _numberOfJumps = 0;
     }
 
@@ -146,6 +172,8 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!_canDash) yield return null;
         float timer = 0f;
+        _animator.SetTrigger("Dash");
+        
         while (timer < dashDuration)
         {
             _characterController.Move(transform.forward * dashSpeed * Time.deltaTime);
