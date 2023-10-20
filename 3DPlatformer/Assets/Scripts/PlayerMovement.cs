@@ -54,6 +54,7 @@ public class PlayerMovement : MonoBehaviour
 
     private float currentVelocity;
     private float rotationSmoothTime = 0.05f;
+    public bool canMove = true;
 
     private void Awake()
     {
@@ -63,10 +64,16 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        if (!canMove)
+        {
+            _animator.SetTrigger("Teleporting");
+            return;
+        }
+        
         RotatePlayer();
         ApplyGravity();
         ApplyMovement();
-
+        
 
         var velocity = new Vector3(_characterController.velocity.x, 0f, _characterController.velocity.z);
 
@@ -156,7 +163,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Dash()
     {
-        if (_canDash)
+        if (_canDash && canMove)
         {
             StartCoroutine(DashCoroutine());
             _canDash = false;
