@@ -129,7 +129,7 @@ public class PlayerMovement : MonoBehaviour
         if (_numberOfJumps == 0) StartCoroutine(WaitForLanding());
 
         if (_numberOfJumps == 0) _animator.SetBool("Jump", true);
-        if (_numberOfJumps == 1) _animator.SetBool("DoubleJump", true);
+        if (_numberOfJumps == 1) _animator.SetTrigger("DoubleJump");
 
         _numberOfJumps++;
         _velocity = jumpPower;
@@ -149,7 +149,6 @@ public class PlayerMovement : MonoBehaviour
         yield return new WaitUntil(IsGrounded);
         _animator.SetTrigger("isLanded");
         _animator.SetBool("Jump", false);
-        _animator.SetBool("DoubleJump", false);
         _numberOfJumps = 0;
     }
 
@@ -188,4 +187,5 @@ public class PlayerMovement : MonoBehaviour
         yield return new WaitForSeconds(dashCooldown);
         _canDash = true;
     }
+
 }
