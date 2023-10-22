@@ -145,9 +145,7 @@ public class PlayerMovement : MonoBehaviour
     public void Dash(InputAction.CallbackContext context)
     {
         if (!context.started) return;
-        if (_canDash) _isDashing = true;
-        
-
+        if (_canDash && _characterController.velocity.magnitude > 0.1f && canMove) _isDashing = true;
     }
 
     private IEnumerator WaitForLanding()
