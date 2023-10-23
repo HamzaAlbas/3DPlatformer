@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 public class PlayerMovement : MonoBehaviour
 {
     #region Variables: Movement
-
+    [Header("Movement")]
     private Vector2 _input;
     private CharacterController _characterController;
     private Vector3 _direction;
@@ -20,7 +20,7 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Variables: Gravity
-
+    [Header("Gravity")]
     private float _gravity = -9.81f;
     [SerializeField] private float gravityMultiplier = 3.0f;
     private float _velocity;
@@ -28,7 +28,7 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Variables: Jumping
-
+    [Header("Jumping")]
     [SerializeField] private float jumpPower;
     private int _numberOfJumps;
     [SerializeField] private int maxNumberOfJumps = 2;
@@ -36,7 +36,7 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Variables: Dash
-
+    [Header("Dash")]
     public GameEvent onPlayerDash;
     public float dashSpeed = 10f;
     public float dashDuration = 0.5f;
@@ -46,16 +46,32 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
+    #region Variables: Ground Pound
+    
+    [Header("Ground Pound")]
+    public float poundDuration = 5;
+    public float poundSpeed = 5;
+    public float poundCooldown = 2;
+    public GameEvent onPlayerGroundPound;
+    private bool _canPound = false;
+    private bool _isPounding = false;
+    private bool _poundOnCooldown = false;
+
+    #endregion
+
     #region Animation
 
     private Animator _animator;
 
     #endregion
 
+    [Header("Etc.")]
+    public GameObject groundHitVFX;
+
     private float currentVelocity;
     private float rotationSmoothTime = 0.05f;
-    public bool canMove = true;
-    public GameObject groundHitVFX;
+    [HideInInspector]public bool canMove = true;
+
 
     private void Awake()
     {
@@ -74,7 +90,7 @@ public class PlayerMovement : MonoBehaviour
         RotatePlayer();
         ApplyGravity();
         ApplyMovement();
-        
+        if(!IsGrounded() && !_isPounding) _canPound = true;
 
         var velocity = new Vector3(_characterController.velocity.x, 0f, _characterController.velocity.z);
 
@@ -88,6 +104,9 @@ public class PlayerMovement : MonoBehaviour
         }
 
         if (_isDashing) Dash();
+
+        if (_isPounding) GroundPound();
+
         _animator.SetBool("isGrounded", IsGrounded());
     }
 
@@ -149,6 +168,12 @@ public class PlayerMovement : MonoBehaviour
         if (_canDash && _characterController.velocity.magnitude > 0.1f && canMove) _isDashing = true;
     }
 
+    public void GroundPound(InputAction.CallbackContext context)
+    {
+        if (!context.performed) return;
+        if (!_isPounding && _canPound && !IsGrounded()) _isPounding = true;
+    }
+
     private IEnumerator WaitForLanding()
     {
         yield return new WaitUntil(() => !IsGrounded());
@@ -156,6 +181,13 @@ public class PlayerMovement : MonoBehaviour
         _animator.SetTrigger("isLanded");
         _animator.SetBool("Jump", false);
         _numberOfJumps = 0;
+
+        if (_isPounding && !_poundOnCooldown)
+        {
+            onPlayerGroundPound.Raise(this, poundCooldown);
+            StartCoroutine(PoundCooldown());
+        }
+
         groundHitVFX.SetActive(true);
     }
 
@@ -195,4 +227,32 @@ public class PlayerMovement : MonoBehaviour
         _canDash = true;
     }
 
+    private void GroundPound()
+    {
+        StartCoroutine(PoundCoroutine());
+    }
+
+    private IEnumerator PoundCoroutine()
+    {
+        if (!_canPound) yield return null;
+
+        float timer = 0f;
+
+        while (timer < poundDuration && _canPound && _isPounding)
+        {
+            _characterController.Move(Vector3.down * poundSpeed * Time.deltaTime);
+            timer += Time.deltaTime;
+            yield return null;
+        }
+    }
+
+    private IEnumerator PoundCooldown()
+    {
+        _poundOnCooldown = true;
+        _canPound = false;
+        yield return new WaitForSeconds(poundCooldown);
+        _canPound = true;
+        _poundOnCooldown = false;
+        _isPounding = false;
+    }
 }
