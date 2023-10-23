@@ -55,6 +55,7 @@ public class PlayerMovement : MonoBehaviour
     private float currentVelocity;
     private float rotationSmoothTime = 0.05f;
     public bool canMove = true;
+    public GameObject groundHitVFX;
 
     private void Awake()
     {
@@ -155,6 +156,7 @@ public class PlayerMovement : MonoBehaviour
         _animator.SetTrigger("isLanded");
         _animator.SetBool("Jump", false);
         _numberOfJumps = 0;
+        groundHitVFX.SetActive(true);
     }
 
     private bool IsGrounded() => _characterController.isGrounded;
