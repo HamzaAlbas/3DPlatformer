@@ -71,6 +71,7 @@ public class PlayerMovement : MonoBehaviour
     private float currentVelocity;
     private float rotationSmoothTime = 0.05f;
     [HideInInspector]public bool canMove = true;
+    public bool isGrounded;
 
 
     private void Awake()
@@ -86,11 +87,12 @@ public class PlayerMovement : MonoBehaviour
             _animator.SetTrigger("Teleporting");
             return;
         }
-        
+
         RotatePlayer();
-        ApplyGravity();
         ApplyMovement();
-        if(!IsGrounded() && !_isPounding) _canPound = true;
+        ApplyGravity();
+
+        if (!IsGrounded() && !_isPounding) _canPound = true;
 
         var velocity = new Vector3(_characterController.velocity.x, 0f, _characterController.velocity.z);
 
@@ -108,6 +110,7 @@ public class PlayerMovement : MonoBehaviour
         if (_isPounding) GroundPound();
 
         _animator.SetBool("isGrounded", IsGrounded());
+        isGrounded = IsGrounded();
     }
 
     private void ApplyGravity()
