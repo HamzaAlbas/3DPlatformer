@@ -210,7 +210,8 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!_canDash) yield return null;
         float timer = 0f;
-        _animator.SetTrigger("Dash");
+        _animator.SetBool("Dash", true);
+        _animator.SetTrigger("DashTrigger");
         
         while (timer < dashDuration)
         {
@@ -223,6 +224,7 @@ public class PlayerMovement : MonoBehaviour
     private IEnumerator DashCooldown()
     {
         _canDash = false;
+        _animator.SetBool("Dash", false);
         yield return new WaitForSeconds(dashCooldown);
         _canDash = true;
     }

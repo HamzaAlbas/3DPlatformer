@@ -67511,11 +67511,11 @@ MonoBehaviour:
   maxNumberOfJumps: 2
   onPlayerDash: {fileID: 11400000, guid: 29aaecc178c3f7f44be3b9719aa0db43, type: 2}
   dashSpeed: 20
-  dashDuration: 0.1
+  dashDuration: 0.25
   dashCooldown: 2
   poundDuration: 5
   poundSpeed: 25
-  poundCooldown: 5
+  poundCooldown: 2
   onPlayerGroundPound: {fileID: 11400000, guid: 943b83b621501814f93437ec8491d338,
     type: 2}
   groundHitVFX: {fileID: 2057778429}
