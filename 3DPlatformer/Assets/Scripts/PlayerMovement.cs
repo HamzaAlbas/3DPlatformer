@@ -32,6 +32,9 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float jumpPower;
     private int _numberOfJumps;
     [SerializeField] private int maxNumberOfJumps = 2;
+    public float groundCheckOffset = 1;
+    public float groundCheckSize = 0.5F;
+    public LayerMask groundLayer;
 
     #endregion
 
@@ -71,7 +74,6 @@ public class PlayerMovement : MonoBehaviour
     private float currentVelocity;
     private float rotationSmoothTime = 0.05f;
     [HideInInspector]public bool canMove = true;
-    public bool isGrounded;
 
 
     private void Awake()
@@ -110,7 +112,6 @@ public class PlayerMovement : MonoBehaviour
         if (_isPounding) GroundPound();
 
         _animator.SetBool("isGrounded", IsGrounded());
-        isGrounded = IsGrounded();
     }
 
     private void ApplyGravity()
@@ -194,7 +195,23 @@ public class PlayerMovement : MonoBehaviour
         groundHitVFX.SetActive(true);
     }
 
-    private bool IsGrounded() => _characterController.isGrounded;
+    //private bool IsGrounded() => _characterController.isGrounded;
+
+    private bool IsGrounded()
+    {
+        var grouncheckPosition = transform.position - new Vector3(0, groundCheckOffset, 0);
+        Collider[] hitColliders = new Collider[1];
+        int numColliders = Physics.OverlapBoxNonAlloc(grouncheckPosition, new Vector3(groundCheckSize, groundCheckSize), hitColliders, Quaternion.identity, groundLayer);
+
+        if (numColliders > 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 
     private void Dash()
     {
@@ -259,5 +276,12 @@ public class PlayerMovement : MonoBehaviour
         _canPound = true;
         _poundOnCooldown = false;
         _isPounding = false;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawCube(transform.position - new Vector3(0, groundCheckOffset, 0), new Vector3(groundCheckSize, groundCheckSize, groundCheckSize));
+
+        Gizmos.color = IsGrounded() ? Color.red : Color.green;
     }
 }
