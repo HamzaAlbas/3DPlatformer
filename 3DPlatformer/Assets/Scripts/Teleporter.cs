@@ -21,7 +21,7 @@ public class Teleporter : MonoBehaviour
 
         playerTransform.transform.position = teleportA.position;
 
-        if (playerTransform.TryGetComponent<OldPlayerMovement>(out var player))
+        if (playerTransform.TryGetComponent<PlayerMovement>(out var player))
         {
             player.teleporting = true;
         }
@@ -40,7 +40,7 @@ public class Teleporter : MonoBehaviour
         blackoutB.gameObject.SetActive(false);
         yield return new WaitForSeconds(1);
 
-        if (playerTransform.TryGetComponent<OldPlayerMovement>(out var player))
+        if (playerTransform.TryGetComponent<PlayerMovement>(out var player))
         {
             player.canMove = true;
             player.teleporting = false;
