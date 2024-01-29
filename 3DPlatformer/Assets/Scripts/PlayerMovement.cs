@@ -172,7 +172,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void Jump(InputAction.CallbackContext context)
     {
-        if (!context.started) return;
+        if (!context.started || !canMove) return;
         if (!IsGrounded() && _numberOfJumps >= maxNumberOfJumps) return;
         if (_numberOfJumps == 0) StartCoroutine(WaitForLanding());
 
@@ -186,13 +186,13 @@ public class PlayerMovement : MonoBehaviour
 
     public void Dash(InputAction.CallbackContext context)
     {
-        if (!context.started) return;
+        if (!context.started || !canMove) return;
         if (_canDash && _characterController.velocity.magnitude > 0.1f && canMove) _isDashing = true;
     }
 
     public void GroundPound(InputAction.CallbackContext context)
     {
-        if (!context.performed) return;
+        if (!context.performed || !canMove) return;
         if (!_isPounding && _canPound && !IsGrounded()) _isPounding = true;
     }
 
