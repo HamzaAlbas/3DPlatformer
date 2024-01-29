@@ -35,7 +35,7 @@ public class PlayerMovement : MonoBehaviour
     public float groundCheckOffset = 1;
     public float groundCheckSize = 0.5F;
     public LayerMask groundLayer;
-
+    private Vector3 jumpStartPos;
     #endregion
 
     #region Variables: Dash
@@ -46,6 +46,7 @@ public class PlayerMovement : MonoBehaviour
     public float dashCooldown = 2f;
     private bool _isDashing;
     private bool _canDash = true;
+    private MeshTrail meshTrail;
 
     #endregion
 
@@ -70,29 +71,45 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Etc.")]
     public GameObject groundHitVFX;
+    public GameObject groundPoundVFX;
 
     private float currentVelocity;
     private float rotationSmoothTime = 0.05f;
     [HideInInspector]public bool canMove = true;
+    [HideInInspector]public bool teleporting = false;
 
 
     private void Awake()
     {
         _characterController = GetComponent<CharacterController>();
         _animator = GetComponent<Animator>();
+        meshTrail = GetComponent<MeshTrail>();
     }
 
     private void Update()
     {
-        if (!canMove)
+        if (transform.position.y < -10) transform.position = new Vector3(0, 1.75f, 0);
+
+        if (teleporting)
         {
+            canMove = false;
             _animator.SetTrigger("Teleporting");
             return;
         }
 
+        if (!canMove) return;
+
         RotatePlayer();
         ApplyMovement();
         ApplyGravity();
+
+        var sqrInput = _input.sqrMagnitude;
+
+        if(sqrInput > Mathf.Epsilon)
+        {
+            _animator.SetFloat("Input", sqrInput);
+        }
+        
 
         if (!IsGrounded() && !_isPounding) _canPound = true;
 
@@ -164,6 +181,7 @@ public class PlayerMovement : MonoBehaviour
 
         _numberOfJumps++;
         _velocity = jumpPower;
+        jumpStartPos = transform.position;
     }
 
     public void Dash(InputAction.CallbackContext context)
@@ -182,7 +200,7 @@ public class PlayerMovement : MonoBehaviour
     {
         yield return new WaitUntil(() => !IsGrounded());
         yield return new WaitUntil(IsGrounded);
-        _animator.SetTrigger("isLanded");
+        
         _animator.SetBool("Jump", false);
         _numberOfJumps = 0;
 
@@ -190,9 +208,17 @@ public class PlayerMovement : MonoBehaviour
         {
             onPlayerGroundPound.Raise(this, poundCooldown);
             StartCoroutine(PoundCooldown());
+            groundPoundVFX.SetActive(true);
         }
-
-        groundHitVFX.SetActive(true);
+        else
+        {
+            if(transform.position.y <= jumpStartPos.y)
+            {
+                groundHitVFX.SetActive(true);
+            }
+        }
+        
+        
     }
 
     //private bool IsGrounded() => _characterController.isGrounded;
@@ -218,10 +244,11 @@ public class PlayerMovement : MonoBehaviour
         if (_canDash && canMove)
         {
             StartCoroutine(DashCoroutine());
+            meshTrail.StartTrail(dashDuration);
             _canDash = false;
             _isDashing = false;
             onPlayerDash.Raise(this, dashCooldown);
-            StartCoroutine(DashCooldown());
+            
         }
 
     }
@@ -230,15 +257,22 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!_canDash) yield return null;
         float timer = 0f;
+        var oldGravity = gravityMultiplier;
+        gravityMultiplier = 0;
+        _velocity = 0;
         _animator.SetBool("Dash", true);
         _animator.SetTrigger("DashTrigger");
-        
+        canMove = false;
+
         while (timer < dashDuration)
         {
             _characterController.Move(transform.forward * dashSpeed * Time.deltaTime);
             timer += Time.deltaTime;
             yield return null;
         }
+        gravityMultiplier = oldGravity;
+        canMove = true;
+        StartCoroutine(DashCooldown());
     }
 
     private IEnumerator DashCooldown()
@@ -266,6 +300,7 @@ public class PlayerMovement : MonoBehaviour
             timer += Time.deltaTime;
             yield return null;
         }
+        _animator.SetBool("IsLanded", true);
     }
 
     private IEnumerator PoundCooldown()
@@ -283,5 +318,16 @@ public class PlayerMovement : MonoBehaviour
         Gizmos.DrawCube(transform.position - new Vector3(0, groundCheckOffset, 0), new Vector3(groundCheckSize, groundCheckSize, groundCheckSize));
 
         Gizmos.color = IsGrounded() ? Color.red : Color.green;
+    }
+
+    public void PoundControlsStart()
+    {
+        _animator.SetBool("IsLanded", false);
+        canMove = false;
+    }
+
+    public void PoundControlsEnd()
+    {
+        canMove = true;
     }
 }
