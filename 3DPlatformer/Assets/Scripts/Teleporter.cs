@@ -21,11 +21,15 @@ public class Teleporter : MonoBehaviour
 
         playerTransform.transform.position = teleportA.position;
 
+
         if (playerTransform.TryGetComponent<PlayerMovement>(out var player))
         {
-            player.teleporting = true;
+            player.TeleportStart();
         }
+
         StartCoroutine(StartTeleporting());
+
+        
     }
 
 
@@ -39,12 +43,11 @@ public class Teleporter : MonoBehaviour
         blackoutA.gameObject.SetActive(false);
         blackoutB.gameObject.SetActive(false);
         yield return new WaitForSeconds(1);
+        teleportB.gameObject.SetActive(false);
 
         if (playerTransform.TryGetComponent<PlayerMovement>(out var player))
         {
-            player.canMove = true;
-            player.teleporting = false;
+            player.TeleportEnd();
         }
-        teleportB.gameObject.SetActive(false);
     }
 }

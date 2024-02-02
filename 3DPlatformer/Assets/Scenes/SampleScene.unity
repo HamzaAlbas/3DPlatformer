@@ -97,7 +97,8 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: 0ee3844274c94c840945a6a4ffc9ac01,
+    type: 2}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
@@ -455,6 +456,50 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &1713083024
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1713083026}
+  - component: {fileID: 1713083025}
+  m_Layer: 0
+  m_Name: InputManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1713083025
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1713083024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3d2f6f74a5735a42a8ca52c8db39aed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1713083026
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1713083024}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!43 &1745638657
 Mesh:
   m_ObjectHideFlags: 0
@@ -15899,7 +15944,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5144041806062477644}
-  - component: {fileID: 1718871358367303899}
+  - component: {fileID: 6752257121646997356}
+  - component: {fileID: 6752257121646997355}
+  - component: {fileID: 6752257121646997354}
   - component: {fileID: 5430926372386160384}
   - component: {fileID: 377969703419798329}
   - component: {fileID: 5179409065086385469}
@@ -31679,41 +31726,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1718871358367303899
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 549875864329134409}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed31d4c962e61c44baf5ee90d253cfd0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 7
-  acceleration: 20
-  gravityMultiplier: 1
-  jumpPower: 3.5
-  maxNumberOfJumps: 2
-  groundCheckOffset: -0.15
-  groundCheckSize: 0.5
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 64
-  onPlayerDash: {fileID: 11400000, guid: 29aaecc178c3f7f44be3b9719aa0db43, type: 2}
-  dashSpeed: 30
-  dashDuration: 0.2
-  dashCooldown: 2
-  poundDuration: 3
-  poundSpeed: 10
-  poundCooldown: 2
-  onPlayerGroundPound: {fileID: 11400000, guid: 943b83b621501814f93437ec8491d338,
-    type: 2}
-  groundHitVFX: {fileID: 3885356137006956644}
-  groundPoundVFX: {fileID: 3203514565720671077}
-  canMove: 1
-  teleporting: 0
 --- !u!198 &1737014971321507416
 ParticleSystem:
   m_ObjectHideFlags: 0
@@ -107338,7 +107350,7 @@ Animator:
   m_GameObject: {fileID: 549875864329134409}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 298d57cee3dbb064791f54a3010e917f, type: 3}
-  m_Controller: {fileID: 9100000, guid: 4d2648f6ec1464b4f934297758477219, type: 2}
+  m_Controller: {fileID: 9100000, guid: 4c7f373c8ed5e9e438555a2bf6aa8c3e, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -117516,7 +117528,7 @@ MonoBehaviour:
   m_ActionEvents:
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1718871358367303899}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: OldPlayerMovement, Assembly-CSharp
         m_MethodName: Move
         m_Mode: 0
@@ -117532,7 +117544,7 @@ MonoBehaviour:
     m_ActionName: Gameplay/Move[/Keyboard/w,/Keyboard/s,/Keyboard/a,/Keyboard/d,/XInputControllerWindows/leftStick]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1718871358367303899}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: OldPlayerMovement, Assembly-CSharp
         m_MethodName: Jump
         m_Mode: 0
@@ -117548,7 +117560,7 @@ MonoBehaviour:
     m_ActionName: Gameplay/Jump[/Keyboard/space,/XInputControllerWindows/buttonSouth]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1718871358367303899}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: OldPlayerMovement, Assembly-CSharp
         m_MethodName: Dash
         m_Mode: 0
@@ -117564,7 +117576,7 @@ MonoBehaviour:
     m_ActionName: Gameplay/Sprint[/Keyboard/leftShift,/XInputControllerWindows/buttonWest]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1718871358367303899}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: OldPlayerMovement, Assembly-CSharp
         m_MethodName: GroundPound
         m_Mode: 0
@@ -128521,6 +128533,63 @@ CapsuleCollider:
   m_Height: 1.6
   m_Direction: 1
   m_Center: {x: 0, y: 0.8, z: 0}
+--- !u!114 &6752257121646997354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549875864329134409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa076b65fd9da1744ae850b580ad246b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  groundPoundForce: 300
+  cooldownTime: 2
+  groundPoundVFX: {fileID: 3203514565720671077}
+  onPlayerGroundPound: {fileID: 11400000, guid: 943b83b621501814f93437ec8491d338,
+    type: 2}
+--- !u!114 &6752257121646997355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549875864329134409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 678cee646e7938d4bafaf1733b324c1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  onPlayerDash: {fileID: 11400000, guid: 29aaecc178c3f7f44be3b9719aa0db43, type: 2}
+  dashSpeed: 30
+  dashDuration: 0.2
+  dashCooldown: 2
+--- !u!114 &6752257121646997356
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 549875864329134409}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ede914cd1b70c794ea4db9b23dabf909, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 7
+  acceleration: 20
+  canMove: 1
+  gravityMultiplier: 1.25
+  jumpPower: 3
+  maxNumberOfJumps: 2
+  groundHitVFX: {fileID: 100000, guid: f06e78284f831ae469c74624ab5d513b, type: 3}
+  groundCheckOffset: -0.22
+  groundCheckSize: 0.5
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 64
 --- !u!95 &6767156848618300765
 Animator:
   serializedVersion: 5
@@ -149408,7 +149477,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &7976436843500959132
 GameObject:
   m_ObjectHideFlags: 0
@@ -154385,6 +154454,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3656971531884694751}
   - component: {fileID: 376414014176030930}
+  - component: {fileID: 8129337326508412271}
   m_Layer: 0
   m_Name: Point Light
   m_TagString: Untagged
@@ -154392,6 +154462,29 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &8129337326508412271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8129337326508412270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Version: 3
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_LightLayerMask: 1
+  m_RenderingLayers: 1
+  m_CustomShadowLayers: 0
+  m_ShadowLayerMask: 1
+  m_ShadowRenderingLayers: 1
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
 --- !u!4 &8171399792067711918
 Transform:
   m_ObjectHideFlags: 0
@@ -164917,3 +165010,4 @@ SceneRoots:
   - {fileID: 5725209942720927283}
   - {fileID: 7520021658880198151}
   - {fileID: 5841598965164015103}
+  - {fileID: 1713083026}
